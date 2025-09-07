@@ -1,10 +1,9 @@
 import os
-from datetime import datetime
 from PySide6.QtWidgets import (QMainWindow, QLabel, QFileDialog, QVBoxLayout, QWidget, 
                              QScrollArea, QMenuBar, QDockWidget, QSplitter, QTreeWidget,
                              QTreeWidgetItem, QHeaderView, QProgressBar, QApplication, 
                              QDialog, QGraphicsView, QGraphicsScene, QGraphicsPixmapItem)
-from PySide6.QtGui import QFont, QMovie, QAction, QActionGroup, QWheelEvent
+from PySide6.QtGui import QFont, QMovie, QAction, QActionGroup, QWheelEvent, QIcon
 from PySide6.QtCore import Qt, QThread, QSize
 from settings import SettingsManager, SettingsDialog
 from image_loader import ImageLoader
@@ -131,6 +130,8 @@ class ImageViewer(QMainWindow):
         
         # 创建菜单
         self._create_menu()
+
+        self._create_toolbar()
         
         # 状态栏
         self.statusBar().showMessage("Ready")
@@ -572,3 +573,72 @@ class ImageViewer(QMainWindow):
                     break   # 只取第一张
                 else:
                     self.statusBar().showMessage("Unsupported file format", 3000)
+    
+    def _create_toolbar(self):
+        """创建带有自定义图标的工具栏"""
+        self.toolbar = self.addToolBar("Tools")
+        self.toolbar.setMovable(False)
+        self.toolbar.setIconSize(QSize(20, 20))
+        
+        # 缩放+ 按钮（自定义图标）
+        zoom_in_icon = QIcon("icons/zoom-in.svg")
+        self.zoom_in_action = QAction(zoom_in_icon, "", self)
+        self.zoom_in_action.setToolTip(self.tr("toolbar_zoom_in") + " (Ctrl++)")
+        self.zoom_in_action.setShortcut("Ctrl++")
+        self.zoom_in_action.triggered.connect(self.zoom_in)
+        self.toolbar.addAction(self.zoom_in_action)
+        
+        # 缩放- 按钮（自定义图标）
+        zoom_out_icon = QIcon("icons/zoom-out.svg")
+        self.zoom_out_action = QAction(zoom_out_icon, "", self)
+        self.zoom_out_action.setToolTip(self.tr("toolbar_zoom_out") + " (Ctrl+-)")
+        self.zoom_out_action.setShortcut("Ctrl+-")
+        self.zoom_out_action.triggered.connect(self.zoom_out)
+        self.toolbar.addAction(self.zoom_out_action)
+        
+        # 1:1 实际大小按钮（自定义图标）
+        actual_size_icon = QIcon("icons/actual-size.svg")
+        self.actual_size_action = QAction(actual_size_icon, "", self)
+        self.actual_size_action.setToolTip(self.tr("toolbar_actual_size") + " (Ctrl+0)")
+        self.actual_size_action.setShortcut("Ctrl+0")
+        self.actual_size_action.triggered.connect(self.actual_size)
+        self.toolbar.addAction(self.actual_size_action)
+        
+        # 适应窗口按钮（自定义图标）
+        fit_window_icon = QIcon("icons/fit-screen.svg")
+        self.fit_window_action = QAction(fit_window_icon, "", self)
+        self.fit_window_action.setToolTip(self.tr("toolbar_fit_window") + " (Ctrl+1)")
+        self.fit_window_action.setShortcut("Ctrl+1")
+        self.fit_window_action.triggered.connect(self.fit_to_window)
+        self.toolbar.addAction(self.fit_window_action)
+        
+        self.toolbar.addSeparator()
+    
+    def zoom_in(self):
+        """放大图像"""
+        if self.pixmap_item:
+            self.scale_factor *= 1.2
+            self.graphics_view.scale(1.2, 1.2)
+
+    def zoom_out(self):
+        """缩小图像"""
+        if self.pixmap_item:
+            self.scale_factor *= 0.8
+            self.graphics_view.scale(0.8, 0.8)
+
+    def actual_size(self):
+        """实际大小 (1:1)"""
+        if self.pixmap_item:
+            # 重置缩放
+            self.graphics_view.resetTransform()
+            self.scale_factor = 1.0
+
+    def fit_to_window(self):
+        """适应窗口大小"""
+        if self.pixmap_item:
+            self.graphics_view.fitInView(self.pixmap_item, Qt.AspectRatioMode.KeepAspectRatio)
+            # 获取当前缩放比例
+            view_rect = self.graphics_view.viewport().rect()
+            scene_rect = self.graphics_view.mapToScene(view_rect).boundingRect()
+            if scene_rect.width() > 0:
+                self.scale_factor = view_rect.width() / scene_rect.width()

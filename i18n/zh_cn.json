@@ -64,5 +64,9 @@
     "file_info_displayed": "文件信息已显示",
     "settings_theme": "主题",
     "settings_theme_dark": "深色",
-    "settings_theme_light": "浅色"
+    "settings_theme_light": "浅色",
+    "toolbar_zoom_in": "放大",
+    "toolbar_zoom_out": "缩小", 
+    "toolbar_actual_size": "实际大小",
+    "toolbar_fit_window": "适应窗口"
 }

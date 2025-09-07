@@ -64,5 +64,9 @@
     "file_info_displayed":"檔案資訊已顯示",
     "settings_theme":"主題",
     "settings_theme_dark":"深色",
-    "settings_theme_light":"淺色"
+    "settings_theme_light":"淺色",
+    "toolbar_zoom_in": "放大",
+    "toolbar_zoom_out": "縮小", 
+    "toolbar_actual_size": "實際大小",
+    "toolbar_fit_window": "適應視窗"
 }

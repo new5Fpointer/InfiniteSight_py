@@ -59,5 +59,9 @@
     "window_state_fullscreen": "Fullscreen",
     "settings_theme": "Theme",
     "settings_theme_dark": "Dark",
-    "settings_theme_light": "Light"
+    "settings_theme_light": "Light",
+    "toolbar_zoom_in": "Zoom In",
+    "toolbar_zoom_out": "Zoom Out", 
+    "toolbar_actual_size": "Actual Size",
+    "toolbar_fit_window": "Fit to Window"
 }
