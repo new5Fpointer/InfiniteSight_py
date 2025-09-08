@@ -272,6 +272,9 @@ class ImageViewer(QMainWindow):
         border_color = "#1E1E1E" if theme == "dark" else "#CCCCCC"
         selected_bg = "#3F3F46" if theme == "dark" else "#E0E0E0"
         progress_bg = "#1E1E1E" if theme == "dark" else "#FFFFFF"
+        scrollbar_bg = "#404040" if theme == "dark" else "#F0F0F0"
+        scrollbar_handle = "#606060" if theme == "dark" else "#C0C0C0"
+        scrollbar_handle_hover = "#808080" if theme == "dark" else "#A0A0A0"
 
         # 使用更简洁的样式表，避免重复选择器
         style_sheet = f"""
@@ -302,6 +305,48 @@ class ImageViewer(QMainWindow):
             }}
             QProgressBar::chunk {{
                 background-color: {accent_color};
+            }}
+            QScrollBar:vertical {{
+                border: none;
+                background: {scrollbar_bg};
+                width: 12px;
+                margin: 0px;
+            }}
+            QScrollBar::handle:vertical {{
+                background: {scrollbar_handle};
+                border-radius: 6px;
+                min-height: 30px;
+            }}
+            QScrollBar::handle:vertical:hover {{
+                background: {scrollbar_handle_hover};
+            }}
+            QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {{
+                border: none;
+                background: none;
+                height: 0px;
+            }}
+            QScrollBar:horizontal {{
+                border: none;
+                background: {scrollbar_bg};
+                height: 12px;
+                margin: 0px;
+            }}
+            QScrollBar::handle:horizontal {{
+                background: {scrollbar_handle};
+                border-radius: 6px;
+                min-width: 30px;
+            }}
+            QScrollBar::handle:horizontal:hover {{
+                background: {scrollbar_handle_hover};
+            }}
+            QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal {{
+                border: none;
+                background: none;
+                width: 0px;
+            }}
+            QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical,
+            QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal {{
+                background: none;
             }}
         """
         
