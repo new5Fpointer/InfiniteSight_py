@@ -16,7 +16,15 @@ class ZoomableGraphicsView(QGraphicsView):
         self.setDragMode(QGraphicsView.DragMode.ScrollHandDrag)
         self.setRenderHint(QtGui.QPainter.RenderHint.SmoothPixmapTransform)
         self.setAlignment(Qt.AlignmentFlag.AlignCenter)
-
+        # 启用抗锯齿
+        self.setRenderHint(QtGui.QPainter.RenderHint.Antialiasing)
+        self.setRenderHint(QtGui.QPainter.RenderHint.TextAntialiasing)
+        
+        # 设置视图port更新模式
+        self.setViewportUpdateMode(QGraphicsView.ViewportUpdateMode.FullViewportUpdate)
+        
+        # 设置缓存背景
+        self.setCacheMode(QGraphicsView.CacheModeFlag.CacheBackground)
     def wheelEvent(self, event: QWheelEvent):
         if event.modifiers() & Qt.KeyboardModifier.ControlModifier:
             zoom_in_factor = 1.15
@@ -39,7 +47,12 @@ class ZoomableGraphicsView(QGraphicsView):
 
             event.accept()
         else:
-            super().wheelEvent(event)
+            # 平滑的普通滚动
+            delta = event.angleDelta().y() * 0.5  # 降低滚动速度
+            self.verticalScrollBar().setValue(
+                self.verticalScrollBar().value() - int(delta)
+            )
+            event.accept()
 
 class ImageViewer(QMainWindow):
     def __init__(self):
