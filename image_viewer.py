@@ -3,7 +3,7 @@ from PySide6.QtWidgets import (QMainWindow, QLabel, QFileDialog, QVBoxLayout, QW
                              QScrollArea, QMenuBar, QDockWidget, QSplitter, QTreeWidget,
                              QTreeWidgetItem, QHeaderView, QProgressBar, QApplication, 
                              QDialog, QGraphicsView, QGraphicsScene, QGraphicsPixmapItem)
-from PySide6.QtGui import QFont, QMovie, QAction, QActionGroup, QWheelEvent, QIcon
+from PySide6.QtGui import QFont, QMovie, QAction, QActionGroup, QWheelEvent, QIcon, QTransform
 from PySide6.QtCore import Qt, QThread, QSize
 from settings import SettingsManager, SettingsDialog
 from image_loader import ImageLoader
@@ -669,6 +669,22 @@ class ImageViewer(QMainWindow):
         self.fit_window_action.setShortcut("Ctrl+1")
         self.fit_window_action.triggered.connect(self.fit_to_window)
         self.toolbar.addAction(self.fit_window_action)
+
+        # 旋转按钮 - 向左旋转
+        rotate_left_icon = QIcon("icons/rotate-left.svg")
+        self.rotate_left_action = QAction(rotate_left_icon, "", self)
+        self.rotate_left_action.setToolTip(self.tr("toolbar_rotate_left") + " (Ctrl+L)")
+        self.rotate_left_action.setShortcut("Ctrl+L")
+        self.rotate_left_action.triggered.connect(lambda: self.rotate_image(-90))
+        self.toolbar.addAction(self.rotate_left_action)
+        
+        # 旋转按钮 - 向右旋转
+        rotate_right_icon = QIcon("icons/rotate-right.svg")
+        self.rotate_right_action = QAction(rotate_right_icon, "", self)
+        self.rotate_right_action.setToolTip(self.tr("toolbar_rotate_right") + " (Ctrl+R)")
+        self.rotate_right_action.setShortcut("Ctrl+R")
+        self.rotate_right_action.triggered.connect(lambda: self.rotate_image(90))
+        self.toolbar.addAction(self.rotate_right_action)
         
         self.toolbar.addSeparator()
     
@@ -700,3 +716,49 @@ class ImageViewer(QMainWindow):
             scene_rect = self.graphics_view.mapToScene(view_rect).boundingRect()
             if scene_rect.width() > 0:
                 self.scale_factor = view_rect.width() / scene_rect.width()
+    
+    def rotate_image(self, angle):
+        """
+        旋转图像
+        
+        Args:
+            angle: 旋转角度（90：向右，-90：向左）
+        """
+        if not self.pixmap_item or not self.current_image_path:
+            return
+        
+        try:
+            # 获取当前 pixmap
+            current_pixmap = self.pixmap_item.pixmap()
+            if current_pixmap.isNull():
+                return
+            
+            # 创建变换矩阵并旋转
+            transform = QTransform()
+            transform.rotate(angle)
+            
+            # 应用旋转变换
+            rotated_pixmap = current_pixmap.transformed(
+                transform, 
+                Qt.TransformationMode.SmoothTransformation
+            )
+            
+            # 更新图像
+            self.pixmap_item.setPixmap(rotated_pixmap)
+            
+            # 更新缩放以适应新方向
+            self.graphics_view.fitInView(self.pixmap_item, Qt.AspectRatioMode.KeepAspectRatio)
+            
+            # 显示状态信息
+            direction = "向左" if angle < 0 else "向右"
+            self.statusBar().showMessage(f"已旋转 {abs(angle)}度 {direction}")
+            
+            # 记录旋转状态（可选：用于保存功能）
+            if not hasattr(self, 'rotation_history'):
+                self.rotation_history = {}
+            self.rotation_history[self.current_image_path] = (
+                self.rotation_history.get(self.current_image_path, 0) + angle
+            ) % 360  # 保持在 0-360 度范围内
+            
+        except Exception as e:
+            self.statusBar().showMessage(f"旋转失败: {str(e)}")
