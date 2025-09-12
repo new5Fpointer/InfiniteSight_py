@@ -655,7 +655,7 @@ class ImageViewer(QMainWindow):
         self.toolbar.setMovable(False)
         self.toolbar.setIconSize(QSize(20, 20))
         
-        # 缩放+ 按钮（自定义图标）
+        # 缩放+ 按钮
         zoom_in_icon = QIcon("icons/zoom-in.svg")
         self.zoom_in_action = QAction(zoom_in_icon, "", self)
         self.zoom_in_action.setToolTip(self.tr("toolbar_zoom_in") + " (Ctrl++)")
@@ -663,7 +663,7 @@ class ImageViewer(QMainWindow):
         self.zoom_in_action.triggered.connect(self.zoom_in)
         self.toolbar.addAction(self.zoom_in_action)
         
-        # 缩放- 按钮（自定义图标）
+        # 缩放- 按钮
         zoom_out_icon = QIcon("icons/zoom-out.svg")
         self.zoom_out_action = QAction(zoom_out_icon, "", self)
         self.zoom_out_action.setToolTip(self.tr("toolbar_zoom_out") + " (Ctrl+-)")
@@ -671,7 +671,7 @@ class ImageViewer(QMainWindow):
         self.zoom_out_action.triggered.connect(self.zoom_out)
         self.toolbar.addAction(self.zoom_out_action)
         
-        # 1:1 实际大小按钮（自定义图标）
+        # 1:1 实际大小按钮
         actual_size_icon = QIcon("icons/actual-size.svg")
         self.actual_size_action = QAction(actual_size_icon, "", self)
         self.actual_size_action.setToolTip(self.tr("toolbar_actual_size") + " (Ctrl+0)")
@@ -679,7 +679,7 @@ class ImageViewer(QMainWindow):
         self.actual_size_action.triggered.connect(self.actual_size)
         self.toolbar.addAction(self.actual_size_action)
         
-        # 适应窗口按钮（自定义图标）
+        # 适应窗口按钮
         fit_window_icon = QIcon("icons/fit-screen.svg")
         self.fit_window_action = QAction(fit_window_icon, "", self)
         self.fit_window_action.setToolTip(self.tr("toolbar_fit_window") + " (Ctrl+1)")
@@ -703,7 +703,13 @@ class ImageViewer(QMainWindow):
         self.rotate_right_action.triggered.connect(lambda: self.rotate_image(90))
         self.toolbar.addAction(self.rotate_right_action)
         
-        self.toolbar.addSeparator()
+        # 镜像按钮
+        mirror_icon = QIcon("icons/mirror-horizontal.svg")
+        self.mirror_action = QAction(mirror_icon, "", self)
+        self.mirror_action.setToolTip(self.tr("toolbar_mirror") + " (Ctrl+M)")
+        self.mirror_action.setShortcut("Ctrl+M")
+        self.mirror_action.triggered.connect(self.mirror_image)
+        self.toolbar.addAction(self.mirror_action)
     
     def zoom_in(self):
         """放大图像"""
@@ -798,3 +804,44 @@ class ImageViewer(QMainWindow):
         
         # 强制更新场景矩形
         self.graphics_view.setSceneRect(self.graphics_scene.itemsBoundingRect())
+    
+    def mirror_image(self):
+        """水平镜像图像"""
+        if not self.pixmap_item or not self.current_image_path:
+            return
+        
+        try:
+            # 获取当前 pixmap
+            current_pixmap = self.pixmap_item.pixmap()
+            if current_pixmap.isNull():
+                return
+            
+            # 创建水平镜像变换
+            transform = QTransform()
+            transform.scale(-1, 1)  # 水平翻转
+            transform.translate(-current_pixmap.width(), 0)  # 平移回正确位置
+            
+            # 应用变换
+            mirrored_pixmap = current_pixmap.transformed(
+                transform, 
+                Qt.TransformationMode.SmoothTransformation
+            )
+            
+            # 更新图像
+            self.pixmap_item.setPixmap(mirrored_pixmap)
+            
+            # 显示状态信息
+            self.statusBar().showMessage("已应用水平镜像")
+            
+            # 记录镜像状态（可选）
+            if not hasattr(self, 'mirror_state'):
+                self.mirror_state = {}
+            
+            # 切换镜像状态
+            current_mirrored = self.mirror_state.get(self.current_image_path, False)
+            self.mirror_state[self.current_image_path] = not current_mirrored
+            
+        except Exception as e:
+            self.statusBar().showMessage(f"镜像失败: {str(e)}")
+        if hasattr(self, 'mirror_state') and self.current_image_path in self.mirror_state:
+            del self.mirror_state[self.current_image_path]

@@ -70,5 +70,6 @@
     "toolbar_actual_size": "实际大小",
     "toolbar_fit_window": "适应窗口",
     "toolbar_rotate_left": "向左旋转",
-    "toolbar_rotate_right": "向右旋转"
+    "toolbar_rotate_right": "向右旋转",
+    "toolbar_mirror": "水平翻转"
 }

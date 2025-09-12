@@ -65,5 +65,6 @@
     "toolbar_actual_size": "Actual Size",
     "toolbar_fit_window": "Fit to Window",
     "toolbar_rotate_left": "Rotate right",
-    "toolbar_rotate_right": "Rotate left"
+    "toolbar_rotate_right": "Rotate left",
+    "toolbar_mirror": "Mirror Horizontal"
 }
