@@ -64,7 +64,7 @@
     "toolbar_zoom_out": "Zoom Out", 
     "toolbar_actual_size": "Actual Size",
     "toolbar_fit_window": "Fit to Window",
-    "toolbar_rotate_left": "Rotate right",
-    "toolbar_rotate_right": "Rotate left",
+    "toolbar_rotate_left": "Rotate left",
+    "toolbar_rotate_right": "Rotate right",
     "toolbar_mirror": "Mirror Horizontal"
 }

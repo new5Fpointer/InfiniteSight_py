@@ -71,5 +71,6 @@
     "toolbar_fit_window": "適應視窗",
     "toolbar_rotate_left": "向右旋轉",
     "toolbar_rotate_right": "向左旋轉",
-    "toolbar_mirror": "水平翻转"
+    "toolbar_mirror": "水平翻转",
+    "settings_show_info": "啟動時顯示資訊面板"
 }
