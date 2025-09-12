@@ -455,6 +455,9 @@ class ImageViewer(QMainWindow):
     def open_recent_file(self, file_path):
         """打开最近文件"""
         if os.path.exists(file_path):
+            # 重置画布状态
+            self.reset_canvas()
+
             # 添加到最近文件
             self.settings_manager.add_recent_file(file_path)
             self.update_recent_files_menu()
@@ -501,6 +504,9 @@ class ImageViewer(QMainWindow):
             "Images (*.png *.jpg *.jpeg *.bmp *.gif *.tiff *.tif *.webp)"
         )
         if file_path:
+            # 重置画布状态
+            self.reset_canvas()
+
             # 添加到最近文件
             self.settings_manager.add_recent_file(file_path)
             self.update_recent_files_menu()
@@ -547,14 +553,25 @@ class ImageViewer(QMainWindow):
             self.statusBar().showMessage(self.tr("error_load_image"))
             return
 
+        # 重置画布 - 先重置所有状态
+        self.reset_canvas()
+        
         # 清空旧图像
         self.graphics_scene.clear()
+        
+        # 创建新的图像项
         self.pixmap_item = QGraphicsPixmapItem(pixmap)
         self.graphics_scene.addItem(self.pixmap_item)
 
+        # 更新场景矩形以适应新图片
+        self.graphics_view.setSceneRect(self.graphics_scene.itemsBoundingRect())
+        
         # 自适应窗口大小
         self.graphics_view.fitInView(self.pixmap_item, Qt.AspectRatioMode.KeepAspectRatio)
-        self.scale_factor = 1.0  # 重置缩放比例
+        
+        # 重置滚动条位置（再次确保）
+        self.graphics_view.horizontalScrollBar().setValue(0)
+        self.graphics_view.verticalScrollBar().setValue(0)
 
         # 隐藏加载动画
         self.loading_label.setVisible(False)
@@ -762,3 +779,22 @@ class ImageViewer(QMainWindow):
             
         except Exception as e:
             self.statusBar().showMessage(f"旋转失败: {str(e)}")
+
+    def reset_canvas(self):
+        """重置画布到初始状态"""
+        # 重置变换矩阵
+        self.graphics_view.resetTransform()
+        self.scale_factor = 1.0
+        
+        # 重置滚动条位置
+        self.graphics_view.horizontalScrollBar().setValue(0)
+        self.graphics_view.verticalScrollBar().setValue(0)
+        
+        # 清除选择状态等
+        self.graphics_scene.clearSelection()
+        
+        # 重置视图中心点
+        self.graphics_view.centerOn(0, 0)
+        
+        # 强制更新场景矩形
+        self.graphics_view.setSceneRect(self.graphics_scene.itemsBoundingRect())
