@@ -34,21 +34,35 @@ class ImageLoader(QObject):
         """执行图像加载任务"""
         try:
             # 1) 大图检测 - 使用缩略图优化加载
+            if self.canceled:
+                return
+                
             if is_very_large(self.file_path):
                 pixmap = load_thumbnail(self.file_path, max_edge=4096)
+                if self.canceled:
+                    return
                 if is_very_large(self.file_path):
                     if pixmap.isNull():
                         raise Exception("Thumbnail generation failed")
             else:
                 # 2) 小图正常加载
                 pixmap = QPixmap(self.file_path)
+                if self.canceled:
+                    return
                 if pixmap.isNull():
                     raise Exception("Failed to load image")
 
+            if self.canceled:
+                return
+                
             self.progress.emit(30)
 
             # 收集图像信息
             image_info = self.collect_image_info(self.file_path)
+            
+            if self.canceled:
+                return
+                
             self.progress.emit(70)
 
             if self.canceled:
@@ -61,7 +75,8 @@ class ImageLoader(QObject):
 
         except Exception as e:
             # 加载失败时发送空图像
-            self.finished.emit(None, f"Error: {str(e)}")
+            if not self.canceled:
+                self.finished.emit(None, f"Error: {str(e)}")
 
     def collect_image_info(self, file_path):
         """

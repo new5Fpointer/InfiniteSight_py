@@ -455,6 +455,9 @@ class ImageViewer(QMainWindow):
     def open_recent_file(self, file_path):
         """打开最近文件"""
         if os.path.exists(file_path):
+            # 先停止任何正在进行的加载
+            self.stop_current_loading()
+            
             # 重置画布状态
             self.reset_canvas()
 
@@ -504,16 +507,15 @@ class ImageViewer(QMainWindow):
             "Images (*.png *.jpg *.jpeg *.bmp *.gif *.tiff *.tif *.webp)"
         )
         if file_path:
+            # 先停止任何正在进行的加载
+            self.stop_current_loading()
+            
             # 重置画布状态
             self.reset_canvas()
 
             # 添加到最近文件
             self.settings_manager.add_recent_file(file_path)
             self.update_recent_files_menu()
-            
-            # 取消任何正在进行的加载
-            if self.image_loader:
-                self.image_loader.cancel()
             
             # 显示加载状态
             self.current_image_path = file_path
@@ -529,6 +531,9 @@ class ImageViewer(QMainWindow):
     
     def start_image_loading(self, file_path):
         """启动后台线程加载图片"""
+        # 先停止任何正在进行的加载
+        self.stop_current_loading()
+        
         # 创建加载器
         self.image_loader = ImageLoader(file_path, self.settings["performance"])
         
@@ -541,6 +546,9 @@ class ImageViewer(QMainWindow):
         self.image_loader.info_ready.connect(self.on_info_ready)
         self.image_loader.progress.connect(self.progress_bar.setValue)
         self.loader_thread.started.connect(self.image_loader.run)
+        
+        # 线程结束时自动清理
+        self.loader_thread.finished.connect(self.loader_thread.deleteLater)
         
         # 启动线程
         self.loader_thread.start()
@@ -579,12 +587,8 @@ class ImageViewer(QMainWindow):
         self.progress_bar.setVisible(False)
         self.statusBar().showMessage(f"Loaded: {os.path.basename(file_path)}")
 
-        # 清理线程
-        if self.loader_thread:
-            self.loader_thread.quit()
-            self.loader_thread.wait()
-            self.loader_thread = None
-            self.image_loader = None
+        # 清理线程（使用新的安全方法）
+        self.stop_current_loading()
 
     def on_info_ready(self, image_info):
         """图片信息加载完成时的处理（单列嵌套显示）"""
@@ -845,3 +849,29 @@ class ImageViewer(QMainWindow):
             self.statusBar().showMessage(f"镜像失败: {str(e)}")
         if hasattr(self, 'mirror_state') and self.current_image_path in self.mirror_state:
             del self.mirror_state[self.current_image_path]
+
+    def stop_current_loading(self):
+        """安全停止当前加载线程"""
+        if self.image_loader:
+            # 取消加载任务
+            self.image_loader.cancel()
+            
+        if self.loader_thread and self.loader_thread.isRunning():
+            # 请求线程退出
+            self.loader_thread.quit()
+            # 等待线程结束（最多等待2秒）
+            self.loader_thread.wait(2000)
+            
+            # 如果线程仍然在运行，强制终止
+            if self.loader_thread.isRunning():
+                self.loader_thread.terminate()
+                self.loader_thread.wait()
+        
+        # 清理引用
+        self.loader_thread = None
+        self.image_loader = None
+
+    def closeEvent(self, event):
+        """窗口关闭时清理资源"""
+        self.stop_current_loading()
+        event.accept()
