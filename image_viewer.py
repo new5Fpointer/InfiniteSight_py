@@ -4,7 +4,7 @@ from PySide6.QtWidgets import (QMainWindow, QLabel, QFileDialog, QVBoxLayout, QW
                              QTreeWidgetItem, QHeaderView, QProgressBar, QApplication, 
                              QDialog, QGraphicsView, QGraphicsScene, QGraphicsPixmapItem)
 from PySide6.QtGui import QFont, QMovie, QAction, QActionGroup, QWheelEvent, QIcon, QTransform
-from PySide6.QtCore import Qt, QThread, QSize
+from PySide6.QtCore import Qt, QThread, QSize, QFile
 from settings import SettingsManager, SettingsDialog
 from image_loader import ImageLoader
 from language_manager import LanguageManager
@@ -209,6 +209,9 @@ class ImageViewer(QMainWindow):
         
         # 应用外观设置（字体和样式）
         self.apply_appearance_settings()
+
+        # 切换图标
+        self.refresh_toolbar_icons()
         
         # 应用信息面板设置
         self.info_dock.setVisible(self.settings["general"]["show_info_panel"])
@@ -631,6 +634,7 @@ class ImageViewer(QMainWindow):
         font_family = self.settings["appearance"]["ui_font"]
         font_size = self.settings["appearance"]["ui_font_size"]
         self.apply_simple_style(theme_name, font_family, font_size)
+        self.refresh_toolbar_icons()
 
         # 更新菜单勾选状态
         self.dark_action.setChecked(theme_name == "dark")
@@ -660,7 +664,7 @@ class ImageViewer(QMainWindow):
         self.toolbar.setIconSize(QSize(20, 20))
         
         # 缩放+ 按钮
-        zoom_in_icon = QIcon("icons/zoom-in.svg")
+        zoom_in_icon = self.themed_icon("zoom-in")
         self.zoom_in_action = QAction(zoom_in_icon, "", self)
         self.zoom_in_action.setToolTip(self.tr("toolbar_zoom_in") + " (Ctrl++)")
         self.zoom_in_action.setShortcut("Ctrl++")
@@ -668,7 +672,7 @@ class ImageViewer(QMainWindow):
         self.toolbar.addAction(self.zoom_in_action)
         
         # 缩放- 按钮
-        zoom_out_icon = QIcon("icons/zoom-out.svg")
+        zoom_out_icon = self.themed_icon("zoom-out")
         self.zoom_out_action = QAction(zoom_out_icon, "", self)
         self.zoom_out_action.setToolTip(self.tr("toolbar_zoom_out") + " (Ctrl+-)")
         self.zoom_out_action.setShortcut("Ctrl+-")
@@ -676,7 +680,7 @@ class ImageViewer(QMainWindow):
         self.toolbar.addAction(self.zoom_out_action)
         
         # 1:1 实际大小按钮
-        actual_size_icon = QIcon("icons/actual-size.svg")
+        actual_size_icon = self.themed_icon("actual-size")
         self.actual_size_action = QAction(actual_size_icon, "", self)
         self.actual_size_action.setToolTip(self.tr("toolbar_actual_size") + " (Ctrl+0)")
         self.actual_size_action.setShortcut("Ctrl+0")
@@ -684,7 +688,7 @@ class ImageViewer(QMainWindow):
         self.toolbar.addAction(self.actual_size_action)
         
         # 适应窗口按钮
-        fit_window_icon = QIcon("icons/fit-screen.svg")
+        fit_window_icon = self.themed_icon("fit-screen")
         self.fit_window_action = QAction(fit_window_icon, "", self)
         self.fit_window_action.setToolTip(self.tr("toolbar_fit_window") + " (Ctrl+1)")
         self.fit_window_action.setShortcut("Ctrl+1")
@@ -692,7 +696,7 @@ class ImageViewer(QMainWindow):
         self.toolbar.addAction(self.fit_window_action)
 
         # 旋转按钮 - 向左旋转
-        rotate_left_icon = QIcon("icons/rotate-left.svg")
+        rotate_left_icon = self.themed_icon("rotate-left")
         self.rotate_left_action = QAction(rotate_left_icon, "", self)
         self.rotate_left_action.setToolTip(self.tr("toolbar_rotate_left") + " (Ctrl+L)")
         self.rotate_left_action.setShortcut("Ctrl+L")
@@ -700,7 +704,7 @@ class ImageViewer(QMainWindow):
         self.toolbar.addAction(self.rotate_left_action)
         
         # 旋转按钮 - 向右旋转
-        rotate_right_icon = QIcon("icons/rotate-right.svg")
+        rotate_right_icon = self.themed_icon("rotate-right")
         self.rotate_right_action = QAction(rotate_right_icon, "", self)
         self.rotate_right_action.setToolTip(self.tr("toolbar_rotate_right") + " (Ctrl+R)")
         self.rotate_right_action.setShortcut("Ctrl+R")
@@ -708,7 +712,7 @@ class ImageViewer(QMainWindow):
         self.toolbar.addAction(self.rotate_right_action)
         
         # 镜像按钮
-        mirror_icon = QIcon("icons/mirror-horizontal.svg")
+        mirror_icon = self.themed_icon("mirror-horizontal")
         self.mirror_action = QAction(mirror_icon, "", self)
         self.mirror_action.setToolTip(self.tr("toolbar_mirror") + " (Ctrl+M)")
         self.mirror_action.setShortcut("Ctrl+M")
@@ -875,3 +879,19 @@ class ImageViewer(QMainWindow):
         """窗口关闭时清理资源"""
         self.stop_current_loading()
         event.accept()
+
+    def themed_icon(self, name: str) -> QIcon:
+        """根据当前主题返回不同图标文件"""
+        theme = self.settings["appearance"]["theme"]
+        path = f"icons/{theme}/{name}.svg"
+        return QIcon(path) if QFile.exists(path) else QIcon()
+    
+    def refresh_toolbar_icons(self):
+        """主题一变，重新刷一遍图标"""
+        self.zoom_in_action.setIcon(self.themed_icon("zoom-in"))
+        self.zoom_out_action.setIcon(self.themed_icon("zoom-out"))
+        self.actual_size_action.setIcon(self.themed_icon("actual-size"))
+        self.fit_window_action.setIcon(self.themed_icon("fit-screen"))
+        self.rotate_left_action.setIcon(self.themed_icon("rotate-left"))
+        self.rotate_right_action.setIcon(self.themed_icon("rotate-right"))
+        self.mirror_action.setIcon(self.themed_icon("mirror-horizontal"))
