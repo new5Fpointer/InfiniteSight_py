@@ -56,6 +56,12 @@ class ZoomableGraphicsView(QGraphicsView):
             )
             event.accept()
 
+    def dragEnterEvent(self, event):
+        self.parent().dragEnterEvent(event)
+
+    def dropEvent(self, event):
+        self.parent().dropEvent(event)
+
 class ImageViewer(QMainWindow):
     def __init__(self):
         super().__init__()
