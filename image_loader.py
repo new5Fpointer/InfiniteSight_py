@@ -14,49 +14,56 @@ from image_cache import is_very_large, load_thumbnail
 
 
 class ImageLoader(QObject):
-    finished = Signal(object, str)
-    info_ready = Signal(object)
+    finished = Signal(object, str, str)
+    info_ready = Signal(object, str)
     progress = Signal(int)
 
-    def __init__(self, file_path: str, performance_settings: Dict[str, Any]) -> None:
-        """初始化加载器"""
+    def __init__(self, file_path: str,
+                 performance_settings: dict[str, Any],
+                 job_id: str) -> None:
         super().__init__()
         self.file_path = file_path
         self.performance_settings = performance_settings
+        self.job_id = job_id          # 新增
         self.canceled = False
+
+    def _should_abort(self) -> bool:
+        # 只检查本线程的 canceled 标志
+        return self.canceled
 
     def run(self) -> None:
         """执行加载任务"""
         try:
-            if self.canceled:
+            if self._should_abort():
                 return
 
             if is_very_large(self.file_path):
-                pixmap = load_thumbnail(self.file_path, max_edge=4096)
-                if self.canceled:
+                pixmap = load_thumbnail(self.file_path, 4096)
+                if self._should_abort():
                     return
                 if pixmap.isNull():
                     raise RuntimeError("Thumbnail generation failed")
             else:
                 pixmap = QPixmap(self.file_path)
-                if self.canceled:
+                if self._should_abort():
                     return
                 if pixmap.isNull():
                     raise RuntimeError("Failed to load image")
 
             self.progress.emit(30)
             image_info = self.collect_image_info(self.file_path)
-            if self.canceled:
+            if self._should_abort():
                 return
             self.progress.emit(70)
 
-            self.finished.emit(pixmap, self.file_path)
-            self.info_ready.emit(image_info)
+            # 把 job_id 一并发回去
+            self.finished.emit(pixmap, self.file_path, self.job_id)
+            self.info_ready.emit(image_info, self.job_id)
             self.progress.emit(100)
 
         except Exception as e:
             if not self.canceled:
-                self.finished.emit(None, f"Error: {str(e)}")
+                self.finished.emit(None, f"Error: {str(e)}", self.job_id)
 
     def collect_image_info(self, file_path: str) -> Dict[str, Any]:
         """收集图像元信息"""
