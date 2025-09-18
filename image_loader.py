@@ -24,7 +24,7 @@ class ImageLoader(QObject):
         super().__init__()
         self.file_path = file_path
         self.performance_settings = performance_settings
-        self.job_id = job_id          # 新增
+        self.job_id = job_id
         self.canceled = False
 
     def _should_abort(self) -> bool:

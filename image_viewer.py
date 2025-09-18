@@ -50,7 +50,7 @@ class ZoomableGraphicsView(QGraphicsView):
             event.accept()
         else:
             # 平滑的普通滚动
-            delta = event.angleDelta().y() * 0.5  # 降低滚动速度
+            delta = event.angleDelta().y() * 0.5
             self.verticalScrollBar().setValue(
                 self.verticalScrollBar().value() - int(delta)
             )
