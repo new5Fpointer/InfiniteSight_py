@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import os
-from typing import Tuple
 
 from PySide6.QtCore import QDir
 from PySide6.QtGui import QImage, QPixmap
