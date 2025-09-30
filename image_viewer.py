@@ -675,6 +675,17 @@ class ImageViewer(QMainWindow):
         self.toolbar.setMovable(False)
         self.toolbar.setIconSize(QSize(20, 20))
         
+        # 文件夹按钮
+        folder_browse_icon = self.themed_icon("folder-open")
+        self.folder_browse_action = QAction(folder_browse_icon, "", self)
+        self.folder_browse_action.setToolTip(self.tr("toolbar_folder_browse") + " (Ctrl+F)")
+        self.folder_browse_action.setShortcut("Ctrl+F")
+        self.folder_browse_action.triggered.connect(self.browse_folder)
+        self.toolbar.addAction(self.folder_browse_action)
+        
+        # 分割线
+        self.toolbar.addSeparator()
+
         # 缩放+ 按钮
         zoom_in_icon = self.themed_icon("zoom-in")
         self.zoom_in_action = QAction(zoom_in_icon, "", self)
@@ -730,6 +741,22 @@ class ImageViewer(QMainWindow):
         self.mirror_action.setShortcut("Ctrl+M")
         self.mirror_action.triggered.connect(self.mirror_image)
         self.toolbar.addAction(self.mirror_action)
+
+        # 上一张图像按钮
+        prev_icon = self.themed_icon("chevron-left")
+        self.prev_image_action = QAction(prev_icon, "", self)
+        self.prev_image_action.setToolTip(self.tr("toolbar_prev_image") + " (Left)")
+        self.prev_image_action.setShortcut("Left")
+        self.prev_image_action.triggered.connect(lambda: self.navigate_folder_image(-1))
+        self.toolbar.addAction(self.prev_image_action)
+
+        # 下一张图像按钮
+        next_icon = self.themed_icon("chevron-right")
+        self.next_image_action = QAction(next_icon, "", self)
+        self.next_image_action.setToolTip(self.tr("toolbar_next_image") + " (Right)")
+        self.next_image_action.setShortcut("Right")
+        self.next_image_action.triggered.connect(lambda: self.navigate_folder_image(1))
+        self.toolbar.addAction(self.next_image_action)
     
     def zoom_in(self):
         """放大图像"""
@@ -902,3 +929,126 @@ class ImageViewer(QMainWindow):
         self.rotate_left_action.setIcon(self.themed_icon("rotate-left"))
         self.rotate_right_action.setIcon(self.themed_icon("rotate-right"))
         self.mirror_action.setIcon(self.themed_icon("mirror-horizontal"))
+
+    def browse_folder(self):
+        """浏览文件夹并显示其中的图像文件"""
+        folder_path = QFileDialog.getExistingDirectory(
+            self,
+            self.tr("browse_folder_title"),
+            "",
+            QFileDialog.Option.ShowDirsOnly | QFileDialog.Option.DontResolveSymlinks
+        )
+        
+        if folder_path:
+            self.load_folder_images(folder_path)
+
+    def load_folder_images(self, folder_path):
+        """加载文件夹中的图像文件"""
+        # 支持的图像格式
+        image_extensions = {'.png', '.jpg', '.jpeg', '.bmp', '.gif', '.tiff', '.tif', '.webp'}
+        
+        # 获取文件夹中的所有图像文件
+        image_files = []
+        for file in os.listdir(folder_path):
+            if any(file.lower().endswith(ext) for ext in image_extensions):
+                full_path = os.path.join(folder_path, file)
+                if os.path.isfile(full_path):
+                    image_files.append(full_path)
+        
+        # 按文件名排序
+        image_files.sort()
+        
+        if not image_files:
+            self.statusBar().showMessage(self.tr("no_images_in_folder"))
+            return
+        
+        # 存储当前文件夹的图像列表和当前索引
+        self.current_folder_images = image_files
+        self.current_folder_index = 0
+        
+        # 加载第一张图像
+        self.load_current_folder_image()
+        
+        # 更新状态栏
+        self.statusBar().showMessage(
+            self.tr("folder_browse_status", 
+                    current=1, 
+                    total=len(image_files), 
+                    folder=os.path.basename(folder_path))
+        )
+
+    def load_current_folder_image(self):
+        """加载当前文件夹中的当前图像"""
+        if hasattr(self, 'current_folder_images') and self.current_folder_images:
+            image_path = self.current_folder_images[self.current_folder_index]
+            
+            # 停止当前加载
+            self.stop_current_loading()
+            
+            # 重置画布状态
+            self.reset_canvas()
+            
+            # 添加到最近文件
+            self.settings_manager.add_recent_file(image_path)
+            self.update_recent_files_menu()
+            
+            # 显示加载状态
+            self.current_image_path = image_path
+            self.statusBar().showMessage(f"Loading: {os.path.basename(image_path)}...")
+            self.graphics_scene.clear()
+            self.loading_label.setVisible(True)
+            self.loading_movie.start()
+            self.progress_bar.setVisible(True)
+            self.progress_bar.setValue(0)
+            
+            # 在后台线程中加载图片
+            self.start_image_loading(image_path)
+
+    def navigate_folder_image(self, direction):
+        """在文件夹中导航图像 (1: 下一张, -1: 上一张)"""
+        if not hasattr(self, 'current_folder_images') or not self.current_folder_images:
+            return
+        
+        new_index = self.current_folder_index + direction
+        
+        # 循环导航
+        if new_index >= len(self.current_folder_images):
+            new_index = 0
+        elif new_index < 0:
+            new_index = len(self.current_folder_images) - 1
+        
+        if new_index != self.current_folder_index:
+            self.current_folder_index = new_index
+            self.load_current_folder_image()
+            
+            # 更新状态栏
+            self.statusBar().showMessage(
+                self.tr("folder_browse_status",
+                        current=self.current_folder_index + 1,
+                        total=len(self.current_folder_images),
+                        folder=os.path.basename(os.path.dirname(self.current_image_path)))
+            )
+
+    def scan_folder_for_images(self, image_path):
+        """扫描图片所在目录，加载所有图片路径"""
+        folder_path = os.path.dirname(image_path)
+        image_extensions = {'.png', '.jpg', '.jpeg', '.bmp', '.gif', '.tiff', '.tif', '.webp'}
+
+        image_files = [
+            os.path.join(folder_path, f)
+            for f in os.listdir(folder_path)
+            if any(f.lower().endswith(ext) for ext in image_extensions)
+        ]
+        image_files.sort()
+
+        if not image_files:
+            self.current_folder_images = []
+            self.current_folder_index = -1
+            return
+
+        self.current_folder_images = image_files
+        self.current_folder_index = image_files.index(image_path)
+
+        # 启用导航按钮
+        self.prev_image_action.setEnabled(True)
+        self.next_image_action.setEnabled(True)
