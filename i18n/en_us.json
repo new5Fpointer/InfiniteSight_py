@@ -21,7 +21,7 @@
     "settings_window_behavior": "Window Behavior",
     "settings_default_window_state": "Default window state:",
     "settings_show_info": "Show information panel on startup",
-    "settings_max_recent": "Maximum recent files:",
+    "settings_max_recent_files": "Maximum recent files:",
     "settings_ui_optimization": "Interface Optimization",
     "settings_image_processing": "Image Processing",
     "settings_lazy_exif": "Lazy EXIF parsing (faster image loading)",
@@ -66,5 +66,12 @@
     "toolbar_fit_window": "Fit to Window",
     "toolbar_rotate_left": "Rotate left",
     "toolbar_rotate_right": "Rotate right",
-    "toolbar_mirror": "Mirror Horizontal"
+    "toolbar_mirror": "Mirror Horizontal",
+    "toolbar_prev_image": "Previous Image",
+    "toolbar_next_image": "Next Image",
+    "folder_browse_status": "Image {current} of {total} in {folder}",
+    "info_panel_visible": "Information panel visible",
+    "image_info_available": "Image information available",
+    "exif_data_loaded": "EXIF data loaded",
+    "file_info_displayed": "File information displayed"
 }

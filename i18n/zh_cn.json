@@ -21,7 +21,6 @@
     "settings_window_behavior": "窗口行为",
     "settings_default_window_state": "默认窗口状态:",
     "settings_show_info_panel": "启动时显示信息面板",
-    "settings_max_recent": "最大最近文件数:",
     "settings_max_recent_files": "最大最近文件数:",
     "settings_ui_optimization": "界面优化",
     "settings_image_processing": "图像处理",
@@ -72,5 +71,8 @@
     "toolbar_rotate_left": "向左旋转",
     "toolbar_rotate_right": "向右旋转",
     "toolbar_mirror": "水平翻转",
-    "settings_show_info": "启动时显示信息面板"
+    "settings_show_info": "启动时显示信息面板",
+    "toolbar_prev_image": "上一张图",
+    "toolbar_next_image": "下一张图",
+    "folder_browse_status": "正在浏览 {folder} 中的图像 {current} / {total}"
 }
