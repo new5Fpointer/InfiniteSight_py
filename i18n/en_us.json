@@ -69,7 +69,7 @@
     "toolbar_mirror": "Mirror Horizontal",
     "toolbar_prev_image": "Previous Image",
     "toolbar_next_image": "Next Image",
-    "folder_browse_status": "Image {current} of {total} in {folder}",
+    "roam_status": "Image {current} of {total} in {folder}",
     "info_panel_visible": "Information panel visible",
     "image_info_available": "Image information available",
     "exif_data_loaded": "EXIF data loaded",

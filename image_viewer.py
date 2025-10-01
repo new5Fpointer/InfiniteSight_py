@@ -109,6 +109,12 @@ class ImageViewer(QMainWindow):
         self.loading_label = QLabel()
         self.loading_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.loading_label.setVisible(False)
+
+        # 漫游信息标签
+        self.roam_label = QLabel()
+        self.roam_label.setObjectName("roam_label")   # 方便样式表
+        self.statusBar().addPermanentWidget(self.roam_label)   # 永久靠右
+        self.roam_label.setVisible(False)            # 默认隐藏
         
         # 创建加载动画
         self.loading_movie = QMovie()
@@ -606,6 +612,8 @@ class ImageViewer(QMainWindow):
         self.stop_current_loading()
 
         self.init_folder_roaming(file_path)
+        
+        self.update_roam_status()
 
     def on_info_ready(self, image_info, job_id: str) -> None:
         if job_id != ImageViewer.current_job_id:
@@ -948,6 +956,7 @@ class ImageViewer(QMainWindow):
             self.current_folder_index = files.index(image_path)
         except ValueError:
             self.current_folder_index = 0
+        self.update_roam_status()
 
     def navigate_folder_image(self, direction: int):
         """方向：+1 下一张，-1 上一张"""
@@ -961,3 +970,19 @@ class ImageViewer(QMainWindow):
         # 直接复用“打开最近文件”逻辑，无需再建加载器
         self.open_recent_file(self.current_folder_images[new_index])
         self.current_folder_index = new_index
+
+    def update_roam_status(self):
+        """刷新右侧漫游信息"""
+        if not self.current_folder_images or self.current_folder_index < 0:
+            self.roam_label.setVisible(False)
+            return
+
+        folder = os.path.basename(os.path.dirname(self.current_image_path))
+        curr = self.current_folder_index + 1
+        total = len(self.current_folder_images)
+        text = self.tr("roam_status",
+                    folder=folder,
+                    current=curr,
+                    total=total)
+        self.roam_label.setText(text)
+        self.roam_label.setVisible(True)

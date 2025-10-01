@@ -74,5 +74,5 @@
     "settings_show_info": "啟動時顯示資訊面板",
     "toolbar_prev_image": "上一張圖",
     "toolbar_next_image": "下一張圖",
-    "folder_browse_status": "正在瀏覽 {folder} 中的圖像 {current} / {total}"
+    "roam_status": "正在瀏覽 {folder} 中的圖像 ({current} / {total})"
 }
