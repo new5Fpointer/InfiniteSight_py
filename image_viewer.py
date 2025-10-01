@@ -930,6 +930,8 @@ class ImageViewer(QMainWindow):
         self.rotate_left_action.setIcon(self.themed_icon("rotate-left"))
         self.rotate_right_action.setIcon(self.themed_icon("rotate-right"))
         self.mirror_action.setIcon(self.themed_icon("mirror-horizontal"))
+        self.prev_image_action.setIcon(self.themed_icon("chevron-left"))
+        self.next_image_action.setIcon(self.themed_icon("chevron-right"))
 
     def init_folder_roaming(self, image_path: str):
         """根据已打开的图片，自动获取同级目录所有图片并初始化漫游列表"""
