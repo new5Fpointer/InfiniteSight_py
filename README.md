@@ -1,4 +1,9 @@
 # InfiniteSight
+![Python Version](https://img.shields.io/badge/python-3.8%2B-blue)
+![License](https://img.shields.io/badge/license-GPLv3-green)
+* 由PySide6制作的图片查看器
+* 支持大图像打开
+
 ## 🌟 核心特性
 
 ### 🚀 极致性能
@@ -15,6 +20,21 @@
 ### 🖌️ 个性化
 - **主题系统**：深色/浅色主题一键切换
 - **多语言界面**：支持中英文动态切换
+  
+## 📖 使用指南
+
+### 基本操作
+- **打开图像**: `Ctrl+O` 或拖放文件到窗口
+- **缩放**: 
+  - `Ctrl` + 鼠标滚轮: 平滑缩放
+  - 工具栏按钮: 放大/缩小/实际大小/适应窗口
+- **导航**: 
+  - `←/→` 键: 浏览文件夹中的图片
+  - 鼠标拖动: 平移大图
+- **旋转镜像**: 
+  - `Ctrl+M`: 水平镜像
+
+
 ## 📂文件树图
 ```
 InfiniteSight/
