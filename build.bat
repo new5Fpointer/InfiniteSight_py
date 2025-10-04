@@ -12,6 +12,7 @@ python -m nuitka main.py ^
   --nofollow-import-to=pyside6.QtQuick ^
   --nofollow-import-to=pyside6.QtSql ^
   --nofollow-import-to=pyside6.QtTest ^
+  --nofollow-import-to=pyside6.QtPdf ^
   --nofollow-import-to=pyside6.QtXml ^
   --output-dir=dist
 pause
